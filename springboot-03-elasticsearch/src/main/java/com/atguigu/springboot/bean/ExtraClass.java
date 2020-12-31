@@ -12,4 +12,7 @@ public class ExtraClass {
 	private String email;
     //新增性别
     private String sex;
+
+    //新增状态
+    private String status;
 }
