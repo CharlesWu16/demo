@@ -12,4 +12,6 @@ public class ExtraClass {
 	private String email;
     //新增性别
     private String sex;
+	//新增价格
+	private String price;
 }
