@@ -6,4 +6,6 @@ package com.atguigu.springboot.bean;
 public class ExtraClass {
     private Integer id;
     private Integer index;
+    private String name;
+    private Integer age;
 }
