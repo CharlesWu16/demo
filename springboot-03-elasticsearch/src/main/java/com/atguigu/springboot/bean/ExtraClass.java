@@ -15,4 +15,6 @@ public class ExtraClass {
 
     //新增状态
     private String status;
+	//新增价格
+	private String price;
 }
