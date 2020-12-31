@@ -8,6 +8,8 @@ public class ExtraClass {
     private Integer index;
     private String name;
     private Integer age;
+	//邮箱
+	private String email;
     //新增性别
     private String sex;
 }
