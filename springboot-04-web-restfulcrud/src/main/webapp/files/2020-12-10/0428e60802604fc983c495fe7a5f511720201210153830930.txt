@@ -1,0 +1,43 @@
+1.负载均衡算法:rest接口第几次请求数%服务器集群总数量=实际调用服务器位置下标，
+每次服务重启动后rest接口计数从1开始，简单来说就是求模取余，举例:
+现在集群的提供者有2个，也就是数量为2，第1次请求时的算式:
+list=2 instance
+1%2 = 1 -》index=1 list.get(index) 所以下标index为1，也就是取list的第二个，
+第二次请求的话:
+2%2 = 0 -》index=0 list.get(index)所以下标index为0，也就是去list的第一个.
+
+List<ServiceInstance> instances=discoveryClient.getInstances("CLOUD-PAYMENT-SERVICE");
+
+如: List[0] instances=127.0.0.1:8002
+    List[1] instances=127.0.0.1:8001
+
+当总请求数为1时: 1%2 = 1 对应下标位置为1,则获得服务地址为127.0.0.1:8001
+当总请求数为2时: 2%2 = 0 对应下标位置为0,则获得服务地址为127.0.0.1:8002
+当总请求数为3时: 3%2 = 1 对应下标位置为1,则获得服务地址为127.0.0.1:8001
+当总请求数为4时: 4%2 = 0 对应下标位置为0,则获得服务地址为127.0.0.1:8002
+依此类推...
+
+2.手写负载均衡算法:
+2.1消费者80的主启动类先将@RibbonClient注解注掉，也就是切回轮询算法
+
+2.2消费者80的配置类ApplicationContextConfig类里面的getRestTemplate()方法
+上的@LoadBalanced注解也注掉，也就是不用原生的负载均衡（手写后如果仍能实现负载均衡的话，
+说明成功）
+
+2.3在提供者8001和8002的controller中写一个获取服务端口号的方法:
+@GetMapping("/payment/lb")
+public String getPaymentLB(){
+   return serverPort;
+}
+
+2.4新建接口LoadBalancer，包名为com.atguigu.springcloud.lb :
+public interface LoadBalancer {
+    ServiceInstance instances(List<ServiceInstance> serviceInstances);
+}
+
+2.5新建接口实现类MyLB
+
+2.6编辑消费者80，自动注入LoadBalancer:
+@Resource
+private LoadBalancer loadBalancer;
+

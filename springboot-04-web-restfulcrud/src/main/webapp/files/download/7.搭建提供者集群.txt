@@ -1,0 +1,31 @@
+说明:本来已经有一个提供者payment8001，现在新建一个payment8002,几乎完全复制8001.
+
+1.yml文件的端口号server.port将8001改成8002.
+
+2.修改controller，新增如下代码:
+  @Value("${server.port}")
+  private String serverPort;
+返回值commonResult中加入serverPort,以显示查询的是哪个提供者.
+(同样8001中的controller也要新增同样的代码.)
+
+3.在消费者80的OrderController中,修改之前写死的URL，
+修改前: private static final String PAYMENT_URL="http://localhost:8001";
+修改后: private static final String PAYMENT_URL="http://CLOUD-PAYMENT-SERVICE";
+说明:"CLOUD-PAYMENT-SERVICE"这个服务名是从Eureka服务中心页面application栏可以找到.
+
+4.在消费者80的配置文件，也就是ApplicationContextConfig类中，在引入RestTemplate
+bean的方法上加上@LoadBalanced注解，作用是开启RestTemplate的负载均衡功能，这样才
+能实现提供者集群的轮询切换功能.
+
+5.测试,先后启动Eureka7001，Eureka7002，payment8001，payment8002，order80,先分别输入
+http://eureka7001.com:7001/和http://eureka7002.com:7002/查看8001,8002和80有没入驻进来，
+之后分别输入http://localhost:8001/payment/get/31和http://localhost:8002/payment/get/31
+访问8001和8002能不能正常获取数据,最后输入http://localhost/consumer/payment/get/31访问
+80能不能正常获取数据.
+
+备注:访问80的时候出现了一个bug，如下:
+java.lang.IllegalStateException: No instances available for CLOUD-PAYMENT-SERVICE
+原因:yml文件中的fetch-registry:项设置了false，应该改成true，如下:
+fetch-registry: true
+解释:是否从EurekaServer抓取已有的注册信息,默认为true。单节点无所谓,
+集群必须设置为true才能配合ribbon使用负载均衡

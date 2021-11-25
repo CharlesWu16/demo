@@ -1,0 +1,29 @@
+1.在8001(8002的操作一样)的PaymentController中注入DiscoveryClient,如下:
+@Resource
+private DiscoveryClient discoveryClient;
+
+2.还是在同一个controller，写一个方法，获取Eureka页面中的服务信息,代码如下:
+@GetMapping(value = "/payment/discovery")
+public Object discovery(){
+        //方式一
+        List<String> services = discoveryClient.getServices();
+        for (String element: services) {
+            log.info("*******element: "+element);
+        }
+        //方式二
+        List<ServiceInstance> instances = discoveryClient.getInstances("CLOUD-PAYMENT-SERVICE");
+        for(ServiceInstance instance : instances){
+            log.info(instance.getServiceId()+"\t"+instance.getHost()+"\t"+instance.getPort()+"\t"+instance.getUri());
+        }
+        return this.discoveryClient;
+}
+
+3.在8001的主启动类加多一个启动服务发现的注解@EnableDiscoveryClient
+
+4.测试,访问discovery方法，访问地址url为:
+localhost:8001/payment/discovery
+如果正常的话会显示如下服务信息:
+*******element: cloud-payment-service
+*******element: cloud-order-service
+CLOUD-PAYMENT-SERVICE	192.168.0.105	8002	http://192.168.0.105:8002
+CLOUD-PAYMENT-SERVICE	192.168.0.105	8001	http://192.168.0.105:8001
