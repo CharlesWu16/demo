@@ -22,5 +22,5 @@ public class User {
     private String gender;
     private Date bir;
     private Map<String,String> maps;
-
+    private Integer age;
 }
